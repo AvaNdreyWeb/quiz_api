@@ -1,9 +1,11 @@
-import httpx
-from fastapi import Depends, FastAPI, status, HTTPException
-from sqlalchemy.orm import Session
-from typing import Dict, Union
 from datetime import datetime
-from . import database, schemas, crud
+from typing import Dict, Union
+
+import httpx
+from fastapi import Depends, FastAPI, HTTPException, status
+from sqlalchemy.orm import Session
+
+from . import crud, database, schemas
 
 database.Base.metadata.create_all(bind=database.engine)
 
@@ -39,20 +41,25 @@ def documentation_link():
 
 
 @app.post("/questions", response_model=Union[schemas.Question, Dict])
-async def create_questions(data: schemas.PostQuestionsNum,  db: Session = Depends(get_db)):
+async def create_questions(
+    data: schemas.PostQuestionsNum,
+    db: Session = Depends(get_db)
+):
     last_question = crud.get_last_question(db)
     questions_list = await get_questions_list(data.questions_num)
 
     for question in questions_list:
         while crud.get_question_by_id(db, question["id"]):
-            print('DEBUG_LOG:', question["id"], 'exists!')
             question = await get_question()
 
         new_question = schemas.Question(
             id=question["id"],
             answer_text=question["answer"],
             question_text=question["question"],
-            created_at=datetime.strptime(question["created_at"], "%Y-%m-%dT%H:%M:%S.%fZ")
+            created_at=datetime.strptime(
+                question["created_at"],
+                "%Y-%m-%dT%H:%M:%S.%fZ"
+            )
         )
         crud.create_question(db, new_question)
 
