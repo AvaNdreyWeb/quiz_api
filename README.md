@@ -1,5 +1,4 @@
 # quiz_api
-Решение первой тестовой задачи на позицию Junior-разработчика
 
 Использованные технологии:
 - Python (FastAPI, SQLAlchemy, hhtpx)
